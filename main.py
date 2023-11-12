@@ -55,7 +55,7 @@ def extract_text_from_JPG(JPG_file):
 
 session_state = st.session_state
 if "api_key" not in session_state:
-    session_state.api_key = None
+    session_state = None
 
 def is_valid_openai_key(api_key):
     openai.api_key = api_key
@@ -105,12 +105,11 @@ def main():
     st.divider()
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+    api_key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
     st.divider()
     st.markdown("**Second step**: Choose format and insert a file to summarize it.")
     option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
-    if key !="":
-        openai.api_key = key
+    if is_valid_openai_key(api_key):
         if option == "Text":
 
             user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
