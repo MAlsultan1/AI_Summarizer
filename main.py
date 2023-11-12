@@ -99,7 +99,7 @@ def main():
     )
 
     st.title("📒Welcome to the AI-summarizer website.")
-    st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
+    st.subheader("This website uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
     st.divider()
     st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
     st.divider()
