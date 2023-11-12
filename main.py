@@ -53,6 +53,7 @@ def extract_text_from_JPG(JPG_file):
     raw_text = image_to_string(image,lang='eng')
     return raw_text
 
+session_state = st.session_state
 if "api_key" not in session_state:
     session_state.api_key = None
 
@@ -63,7 +64,7 @@ def is_valid_openai_key(api_key):
         response = openai.Engine.list()
         if response and 'text' in response:
             return True
-    except:
+    except openai.error.OpenAIError as e:
         if "Authentication" in str(e):
             return False
     return False
