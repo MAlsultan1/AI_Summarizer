@@ -17,6 +17,47 @@ st.set_page_config(
          layout="wide",
     )
 
+def is_api_key_valid():
+        try:
+            response = openai.Completion.create(
+                engine="davinci",
+                prompt="This is a test.",
+                max_tokens=5
+            )
+        except:
+            return False
+        else:
+            return True
+
+api_key_valid = is_api_key_valid()
+
+if api_key_valid == True:
+    @st.cache_data
+    def get_response(text, api_key_valid):
+   
+        
+        prompt = f"""
+            You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
+            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
+            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
+
+            text: ''''{text}''''
+            """
+        response = openai.ChatCompletion.create(
+            model = "gpt-3.5-turbo",
+            messages=[
+                {
+                    "role" : "system",
+                    "content" : prompt,
+                },
+            ],
+
+        )
+        return response ["choices"][0]["message"]["content"]
+    
+else:
+    st.error("Please provide a valid API key.")
+
 def main():
     
 
@@ -213,48 +254,6 @@ def extract_text_from_JPG(JPG_file):
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
     raw_text = image_to_string(image,lang='eng')
     return raw_text
-
-def is_api_key_valid():
-        try:
-            response = openai.Completion.create(
-                engine="davinci",
-                prompt="This is a test.",
-                max_tokens=5
-            )
-        except:
-            return False
-        else:
-            return True
-
-api_key_valid = is_api_key_valid()
-
-if api_key_valid == True:
-    @st.cache_data
-    def get_response(text, api_key_valid):
-   
-        
-        prompt = f"""
-            You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
-            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
-            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
-
-            text: ''''{text}''''
-            """
-        response = openai.ChatCompletion.create(
-            model = "gpt-3.5-turbo",
-            messages=[
-                {
-                    "role" : "system",
-                    "content" : prompt,
-                },
-            ],
-
-        )
-        return response ["choices"][0]["message"]["content"]
-    
-else:
-    st.error("Please provide a valid API key.")
-
 
 
 if __name__ == "__main__":
