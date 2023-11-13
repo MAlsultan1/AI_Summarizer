@@ -81,19 +81,20 @@ def main():
         page_icon = "📒",
          layout="wide",
     )
-    if key != "":
-        st.title("📒Welcome to the AI-summarizer website.")
-        st.subheader("This website uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
-        st.divider()
-        st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
-        st.divider()
-        st.markdown("**First step**: Please enter OpenAI key.")
-        st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-        key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-        st.divider()
-        st.markdown("**Second step**: Choose format and insert a file to summarize it.")
-        option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
 
+    st.title("Summarizer App")
+    st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
+    st.divider()
+    st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
+    st.divider()
+    st.markdown("**First step**: Please enter OpenAI key.")
+    st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
+    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+    st.divider()
+    st.markdown("**Second step**: Choose format and insert a file to summarize it.")
+    option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
+    if key !="":
+        openai.api_key = key
         if option == "Text":
 
             user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
