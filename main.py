@@ -27,11 +27,12 @@ def main():
     st.divider()
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-    is_api_key_valid()
+    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+    openai.api_key = key
     st.divider()
     st.markdown("**Second step**: Choose format and insert a file to summarize it.")
     option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
- 
+    
     if option == "Text":
 
         user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
@@ -214,8 +215,6 @@ def extract_text_from_JPG(JPG_file):
     return raw_text
 
 def is_api_key_valid():
-        key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-        openai.api_key = key
         try:
             response = openai.Completion.create(
                 engine="davinci",
