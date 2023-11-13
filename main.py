@@ -11,12 +11,14 @@ from pytesseract import image_to_string
 import glob
 import time
 
-def main():
-    st.set_page_config(
+st.set_page_config(
         page_title = "Summarizer",
         page_icon = "📒",
          layout="wide",
     )
+
+def main():
+    
 
     st.title("Summarizer App")
     st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
