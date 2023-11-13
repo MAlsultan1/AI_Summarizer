@@ -235,24 +235,24 @@ def main():
         else:
             st.error("Please upload a Powerpoint file.")
 
-st.divider()
+    st.divider()
 
-github_link = "https://github.com/MAlsultan1"
-twitter_link = "https://twitter.com/Mish3l809"
-github_logo = "https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Github-16.png"
-twitter_logo = "https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-16.png"
+    github_link = "https://github.com/MAlsultan1"
+    twitter_link = "https://twitter.com/Mish3l809"
+    github_logo = "https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Github-16.png"
+    twitter_logo = "https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-16.png"
 
-html = f"""
+    html = f"""
     <ul style="list-style-type: none; padding-left: 0;">
         <li><a href="{github_link}" target="_blank"><img src="{github_logo}" width="20" height="20"/> GitHub</a></li>
         <li><a href="{twitter_link}" target="_blank"><img src="{twitter_logo}" width="20" height="20"/> X(Twitter)</a></li>
     </ul>
     """
-st.subheader("follow me on:")
-st.markdown(html, unsafe_allow_html=True)
+    st.subheader("follow me on:")
+    st.markdown(html, unsafe_allow_html=True)
 
-st.caption('Made by Meshal Alsultan')
-st.caption('v1.0')     
+    st.caption('Made by Meshal Alsultan')
+    st.caption('v1.0')     
 
 if __name__ == "__main__":
     main() 
