@@ -11,91 +11,6 @@ from pytesseract import image_to_string
 import glob
 import time
 
-
-
-def extract_text_from_pdf(pdf_file):
-
-    reader = PdfReader(pdf_file)
-
-    raw_text = ""
-    for page in reader.pages:
-        content = page.extract_text()
-        if content:
-            raw_text = raw_text + content
-
-    return raw_text
-
-def extract_text_from_pptx(pptx_file):
-
-    raw_text = ""
-    prs = Presentation(pptx_file)
-
-    for slide in prs.slides:
-        for shape in slide.shapes:
-            if hasattr(shape, "text"):
-                text=shape.text
-                raw_text = raw_text + text
-    
-    return raw_text
-
-def extract_text_from_docx(docx_file):
-
-    doc = docx.Document(docx_file)
-    fullText = []
-    for para in doc.paragraphs:
-        fullText.append(para.text)
-    return '\n'.join(fullText)
-
-def extract_text_from_JPG(JPG_file):
-
-    image = Image.open(JPG_file)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
-    raw_text = image_to_string(image,lang='eng')
-    return raw_text
-
-def is_api_key_valid():
-        key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-        openai.api_key = key
-        try:
-            response = openai.Completion.create(
-                engine="davinci",
-                prompt="This is a test.",
-                max_tokens=5
-            )
-        except:
-            return False
-        else:
-            return True
-
-api_key_valid = is_api_key_valid()
-
-
-@st.cache_data
-def get_response(text, api_key_valid):
-    if api_key_valid == True:
-        
-        prompt = f"""
-            You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
-            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
-            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
-
-            text: ''''{text}''''
-            """
-        response = openai.ChatCompletion.create(
-            model = "gpt-3.5-turbo",
-            messages=[
-                {
-                    "role" : "system",
-                    "content" : prompt,
-                },
-            ],
-
-        )
-        return response ["choices"][0]["message"]["content"]
-    
-    else:
-        st.error("Please provide a valid API key.")
-
 def main():
     st.set_page_config(
         page_title = "Summarizer",
@@ -254,6 +169,92 @@ def main():
 
     st.caption('Made by Meshal Alsultan')
     st.caption('v1.0')     
+
+
+def extract_text_from_pdf(pdf_file):
+
+    reader = PdfReader(pdf_file)
+
+    raw_text = ""
+    for page in reader.pages:
+        content = page.extract_text()
+        if content:
+            raw_text = raw_text + content
+
+    return raw_text
+
+def extract_text_from_pptx(pptx_file):
+
+    raw_text = ""
+    prs = Presentation(pptx_file)
+
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if hasattr(shape, "text"):
+                text=shape.text
+                raw_text = raw_text + text
+    
+    return raw_text
+
+def extract_text_from_docx(docx_file):
+
+    doc = docx.Document(docx_file)
+    fullText = []
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+    return '\n'.join(fullText)
+
+def extract_text_from_JPG(JPG_file):
+
+    image = Image.open(JPG_file)
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
+    raw_text = image_to_string(image,lang='eng')
+    return raw_text
+
+def is_api_key_valid():
+        key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+        openai.api_key = key
+        try:
+            response = openai.Completion.create(
+                engine="davinci",
+                prompt="This is a test.",
+                max_tokens=5
+            )
+        except:
+            return False
+        else:
+            return True
+
+api_key_valid = is_api_key_valid()
+
+
+@st.cache_data
+def get_response(text, api_key_valid):
+    if api_key_valid == True:
+        
+        prompt = f"""
+            You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
+            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
+            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
+
+            text: ''''{text}''''
+            """
+        response = openai.ChatCompletion.create(
+            model = "gpt-3.5-turbo",
+            messages=[
+                {
+                    "role" : "system",
+                    "content" : prompt,
+                },
+            ],
+
+        )
+        return response ["choices"][0]["message"]["content"]
+    
+    else:
+        st.error("Please provide a valid API key.")
+
+
 
 if __name__ == "__main__":
     main() 
