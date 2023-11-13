@@ -228,10 +228,10 @@ def is_api_key_valid():
 
 api_key_valid = is_api_key_valid()
 
-
-@st.cache_data
-def get_response(text, api_key_valid):
-    if api_key_valid == True:
+if api_key_valid == True:
+    @st.cache_data
+    def get_response(text, api_key_valid):
+   
         
         prompt = f"""
             You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
@@ -252,8 +252,8 @@ def get_response(text, api_key_valid):
         )
         return response ["choices"][0]["message"]["content"]
     
-    else:
-        st.error("Please provide a valid API key.")
+else:
+    st.error("Please provide a valid API key.")
 
 
 
