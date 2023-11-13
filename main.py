@@ -90,11 +90,12 @@ def main():
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
     key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+    openai.api_key = key
     st.divider()
     st.markdown("**Second step**: Choose format and insert a file to summarize it.")
     option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
 
-    def is_api_key_valid(key):
+    def is_api_key_valid():
         try:
             response = openai.Completion.create(
                 engine="davinci",
@@ -106,9 +107,10 @@ def main():
         else:
             return True
 
+    api_key_valid = is_api_key_valid()
 
-    if is_api_key_valid(key) == True:
-        openai.api_key = key
+    if api_key_valid == True:
+        
 
         if option == "Text":
 
@@ -230,7 +232,7 @@ def main():
                 st.markdown(f"> {response}")
             else:
                 st.error("Please upload a Powerpoint file.")
-    elif is_api_key_valid(key)==False:
+    elif api_key_valid==False:
         st.error("Please provide a valid key.")
 
     st.divider()
