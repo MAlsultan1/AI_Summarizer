@@ -82,8 +82,8 @@ def main():
          layout="wide",
     )
 
-    st.title("Summarizer App")
-    st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
+    st.title("📒Welcome to summarizeAI website.")
+    st.subheader("This website uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
     st.divider()
     st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
     st.divider()
@@ -108,151 +108,161 @@ def main():
             return True
 
     api_key_valid = is_api_key_valid()
+ 
+    if option == "Text":
 
-    if api_key_valid == True:
-        
+        user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
 
-        if option == "Text":
+        if st.button("Submit") and user_input !="":
 
-            user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
-
-            if st.button("Submit") and user_input !="":
-
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
                 
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
                 
-                time.sleep(1)
-                my_bar.empty()
+            time.sleep(1)
+            my_bar.empty()
 
+            if api_key_valid == True:    
                 response = get_response(user_input)
                 st.success("done!")
                 st.subheader("Summary")
                 st.markdown(f"> {response}")
             else:
-                st.error("Please enter some text.")
+                st.error("Please provide a valid key.")
+        else:
+            st.error("Please enter some text.")
 
-        elif option == "Image":
-            uploaded_file = st.file_uploader("Choose a JPG file",type="jpg")
+    elif option == "Image":
+        uploaded_file = st.file_uploader("Choose a JPG file",type="jpg")
 
-            st.divider()
+        st.divider()
 
-            if st.button("Submit") and uploaded_file is not None:
-                text = str(extract_text_from_JPG(uploaded_file))
+        if st.button("Submit") and uploaded_file is not None:
+            text = str(extract_text_from_JPG(uploaded_file))
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
                 
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
                 
-                time.sleep(1)
-                my_bar.empty()
+            time.sleep(1)
+            my_bar.empty()
 
-                response = get_response(text=text)
+            if api_key_valid == True:    
+                response = get_response(user_input)
                 st.success("done!")
                 st.subheader("Summary")
                 st.markdown(f"> {response}")
             else:
-                st.error("Please upload a JPG file.")
+                st.error("Please provide a valid key.")
+        else:
+            st.error("Please upload a JPG file.")
 
-        elif option == "PDF":
-            uploaded_file = st.file_uploader("Choose a PDF file",type="PDF")
+    elif option == "PDF":
+        uploaded_file = st.file_uploader("Choose a PDF file",type="PDF")
         
-            st.divider()
+        st.divider()
 
-            if st.button("Submit") and uploaded_file is not None:
-                text = extract_text_from_pdf(uploaded_file)
+        if st.button("Submit") and uploaded_file is not None:
+            text = extract_text_from_pdf(uploaded_file)
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
                 
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
                 
-                time.sleep(1)
-                my_bar.empty()
+            time.sleep(1)
+            my_bar.empty()
 
-                response = get_response(text=text)
+            if api_key_valid == True:    
+                response = get_response(user_input)
                 st.success("done!")
                 st.subheader("Summary")
                 st.markdown(f"> {response}")
             else:
-                st.error("Please upload a PDF file.")
+                st.error("Please provide a valid key.")
+        else:
+            st.error("Please upload a PDF file.")
 
-        elif option == "Word":
-            uploaded_file = st.file_uploader("Choose a Word file",type="docx")
+    elif option == "Word":
+        uploaded_file = st.file_uploader("Choose a Word file",type="docx")
 
-            if st.button("Submit") and uploaded_file is not None:
-                text = extract_text_from_docx(uploaded_file)
+        if st.button("Submit") and uploaded_file is not None:
+            text = extract_text_from_docx(uploaded_file)
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
                 
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
                 
-                time.sleep(1)
-                my_bar.empty()
+            time.sleep(1)
+            my_bar.empty()
 
-                response = get_response(text=text)
+            if api_key_valid == True:    
+                response = get_response(user_input)
                 st.success("done!")
                 st.subheader("Summary")
                 st.markdown(f"> {response}")
             else:
-                st.error("Please upload a Word file.")
+                st.error("Please provide a valid key.")
+        else:
+            st.error("Please upload a Word file.")
 
-        elif option == "PowerPoint":
-            uploaded_file = st.file_uploader("Choose a Powerpoint file",type="pptx")
+    elif option == "PowerPoint":
+        uploaded_file = st.file_uploader("Choose a Powerpoint file",type="pptx")
 
-            st.divider()
+        st.divider()
 
-            if st.button("Submit") and uploaded_file is not None:
-                text = extract_text_from_pptx(uploaded_file)
+        if st.button("Submit") and uploaded_file is not None:
+            text = extract_text_from_pptx(uploaded_file)
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
+
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
                 
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                
-                time.sleep(1)
-                my_bar.empty()
+            time.sleep(1)
+            my_bar.empty()
 
-                response = get_response(text=text)
+            if api_key_valid == True:    
+                response = get_response(user_input)
                 st.success("done!")
                 st.subheader("Summary")
                 st.markdown(f"> {response}")
             else:
-                st.error("Please upload a Powerpoint file.")
-    else:
-        st.error("Please provide a valid key.")
+                st.error("Please provide a valid key.")
+        else:
+            st.error("Please upload a Powerpoint file.")
 
-    st.divider()
+st.divider()
 
-    github_link = "https://github.com/MAlsultan1"
-    twitter_link = "https://twitter.com/Mish3l809"
-    github_logo = "https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Github-16.png"
-    twitter_logo = "https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-16.png"
+github_link = "https://github.com/MAlsultan1"
+twitter_link = "https://twitter.com/Mish3l809"
+github_logo = "https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Github-16.png"
+twitter_logo = "https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-16.png"
 
-    html = f"""
+html = f"""
     <ul style="list-style-type: none; padding-left: 0;">
         <li><a href="{github_link}" target="_blank"><img src="{github_logo}" width="20" height="20"/> GitHub</a></li>
         <li><a href="{twitter_link}" target="_blank"><img src="{twitter_logo}" width="20" height="20"/> X(Twitter)</a></li>
     </ul>
     """
-    st.subheader("follow me on:")
-    st.markdown(html, unsafe_allow_html=True)
+st.subheader("follow me on:")
+st.markdown(html, unsafe_allow_html=True)
 
-    st.caption('Made by Meshal Alsultan')
-    st.caption('v1.0')     
+st.caption('Made by Meshal Alsultan')
+st.caption('v1.0')     
 
 if __name__ == "__main__":
     main() 
