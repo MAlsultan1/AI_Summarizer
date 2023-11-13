@@ -93,8 +93,23 @@ def main():
     st.divider()
     st.markdown("**Second step**: Choose format and insert a file to summarize it.")
     option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
-    if key !="":
+
+    def is_api_key_valid(key):
+        try:
+            response = openai.Completion.create(
+                engine="davinci",
+                prompt="This is a test.",
+                max_tokens=5
+            )
+        except:
+            return False
+        else:
+            return True
+
+
+    if is_api_key_valid(key):
         openai.api_key = key
+
         if option == "Text":
 
             user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
@@ -216,7 +231,7 @@ def main():
             else:
                 st.error("Please upload a Powerpoint file.")
     else:
-        st.error("Please provide a key.")
+        st.error("Please provide a valid key.")
 
     st.divider()
 
