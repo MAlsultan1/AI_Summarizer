@@ -232,7 +232,7 @@ def main():
                 st.markdown(f"> {response}")
             else:
                 st.error("Please upload a Powerpoint file.")
-    elif api_key_valid==False:
+    else:
         st.error("Please provide a valid key.")
 
     st.divider()
