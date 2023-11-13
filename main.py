@@ -53,49 +53,7 @@ def extract_text_from_JPG(JPG_file):
     raw_text = image_to_string(image,lang='eng')
     return raw_text
 
-@st.cache_data
-def get_response(text):
-
-    prompt = f"""
-            You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
-            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
-            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
-
-            text: ''''{text}''''
-            """
-    response = openai.ChatCompletion.create(
-        model = "gpt-3.5-turbo",
-        messages=[
-            {
-                "role" : "system",
-                "content" : prompt,
-            },
-        ],
-
-    )
-    return response ["choices"][0]["message"]["content"]
-
-def main():
-    st.set_page_config(
-        page_title = "Summarizer",
-        page_icon = "📒",
-        layout="wide",
-    )
-
-    st.title("📒Welcome to SummarizeAI website.")
-    st.subheader("This website uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
-    st.divider()
-    st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
-    st.divider()
-    st.markdown("**First step**: Please enter OpenAI key.")
-    st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    openai.api_key = key
-    st.divider()
-    st.markdown("**Second step**: Choose format and insert a file to summarize it.")
-    option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
-
-    def is_api_key_valid():
+def is_api_key_valid():
         try:
             response = openai.Completion.create(
                 engine="davinci",
@@ -107,7 +65,54 @@ def main():
         else:
             return True
 
-    api_key_valid = is_api_key_valid()
+api_key_valid = is_api_key_valid()
+
+
+@st.cache_data
+def get_response(text, api_key_valid):
+    if api_key_valid == True:
+        
+        prompt = f"""
+            You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
+            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
+            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
+
+            text: ''''{text}''''
+            """
+        response = openai.ChatCompletion.create(
+            model = "gpt-3.5-turbo",
+            messages=[
+                {
+                    "role" : "system",
+                    "content" : prompt,
+                },
+            ],
+
+        )
+        return response ["choices"][0]["message"]["content"]
+    
+    else:
+        st.error("Please provide a valid API key.")
+
+def main():
+    st.set_page_config(
+        page_title = "Summarizer",
+        page_icon = "📒",
+         layout="wide",
+    )
+
+    st.title("Summarizer App")
+    st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
+    st.divider()
+    st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
+    st.divider()
+    st.markdown("**First step**: Please enter OpenAI key.")
+    st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
+    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+    openai.api_key = key
+    st.divider()
+    st.markdown("**Second step**: Choose format and insert a file to summarize it.")
+    option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
  
     if option == "Text":
 
@@ -125,13 +130,10 @@ def main():
             time.sleep(1)
             my_bar.empty()
 
-            if api_key_valid == True:    
-                response = get_response(user_input)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please provide a valid key.")
+            response = get_response(user_input)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
         else:
             st.error("Please enter some text.")
 
@@ -153,13 +155,10 @@ def main():
             time.sleep(1)
             my_bar.empty()
 
-            if api_key_valid == True:    
-                response = get_response(user_input)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please provide a valid key.")
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
         else:
             st.error("Please upload a JPG file.")
 
@@ -181,13 +180,10 @@ def main():
             time.sleep(1)
             my_bar.empty()
 
-            if api_key_valid == True:    
-                response = get_response(user_input)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please provide a valid key.")
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
         else:
             st.error("Please upload a PDF file.")
 
@@ -207,13 +203,10 @@ def main():
             time.sleep(1)
             my_bar.empty()
 
-            if api_key_valid == True:    
-                response = get_response(user_input)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please provide a valid key.")
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
         else:
             st.error("Please upload a Word file.")
 
@@ -235,13 +228,10 @@ def main():
             time.sleep(1)
             my_bar.empty()
 
-            if api_key_valid == True:    
-                response = get_response(user_input)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please provide a valid key.")
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
         else:
             st.error("Please upload a Powerpoint file.")
 
