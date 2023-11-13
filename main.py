@@ -107,7 +107,7 @@ def main():
             return True
 
 
-    if is_api_key_valid(key):
+    if is_api_key_valid(key) == True:
         openai.api_key = key
 
         if option == "Text":
