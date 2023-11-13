@@ -31,6 +31,17 @@ def is_api_key_valid():
 
 api_key_valid = is_api_key_valid()
 
+st.title("Summarizer App")
+st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
+st.divider()
+st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
+st.divider()
+st.markdown("**First step**: Please enter OpenAI key.")
+st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
+key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+openai.api_key = key
+
+
 if api_key_valid == True:
     @st.cache_data
     def get_response(text, api_key_valid):
@@ -60,16 +71,6 @@ else:
 
 def main():
     
-
-    st.title("Summarizer App")
-    st.subheader("This app uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
-    st.divider()
-    st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
-    st.divider()
-    st.markdown("**First step**: Please enter OpenAI key.")
-    st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    openai.api_key = key
     st.divider()
     st.markdown("**Second step**: Choose format and insert a file to summarize it.")
     option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
