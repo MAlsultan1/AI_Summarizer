@@ -11,221 +11,217 @@ from pytesseract import image_to_string
 import glob
 import time
 
+st.set_page_config(
+    page_title="Summarizer",
+    page_icon="📒",
+    layout="wide",
+)
 
 
-def extract_text_from_pdf(pdf_file):
+session_state = st.session_state
 
-    reader = PdfReader(pdf_file)
 
-    raw_text = ""
-    for page in reader.pages:
-        content = page.extract_text()
-        if content:
-            raw_text = raw_text + content
+if "api_key" not in session_state:
+    session_state.api_key = None
 
-    return raw_text
 
-def extract_text_from_pptx(pptx_file):
-
-    raw_text = ""
-    prs = Presentation(pptx_file)
-
-    for slide in prs.slides:
-        for shape in slide.shapes:
-            if hasattr(shape, "text"):
-                text=shape.text
-                raw_text = raw_text + text
-    
-    return raw_text
-
-def extract_text_from_docx(docx_file):
-
-    doc = docx.Document(docx_file)
-    fullText = []
-    for para in doc.paragraphs:
-        fullText.append(para.text)
-    return '\n'.join(fullText)
-
-def extract_text_from_JPG(JPG_file):
-
-    image = Image.open(JPG_file)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
-    raw_text = image_to_string(image,lang='eng')
-    return raw_text
-
-def check_openai_api_key(api_key):
+# ? Check if the provided OpenAI API key is valid
+def is_valid_openai_key(api_key):
+    """Check if the provided OpenAI API key is valid."""
     openai.api_key = api_key
     try:
-        openai.Model.list()
-    except openai.error.AuthenticationError as e:
-        return False
-    else:
-        return True
-    
-@st.cache_data
-def get_response(text):
+        # ! Make a test call. Here we'll list available engines, which is a lightweight call.
+        response = openai.Engine.list()
+        if response and 'data' in response:
+            return True
+    except openai.error.OpenAIError as e:
+        # ! Handle specific authentication error
+        if "Authentication" in str(e):
+            return False
+    return False
 
-    prompt = f"""
+
+# ? If API key has not been set, show the input
+if not session_state.api_key:
+    st.title("📒Welcome to AI summarizer website.")
+    st.write("Please enter your OpenAI API key to begin:")
+    temp_key = st.text_input("OpenAI API Key:", type="password")
+    api_key_url = "https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt"
+    html_code = f"""
+    <ul style="list-style-type: none; padding-left: 0;">
+    <li>Need an API key? <a href="{api_key_url}" target="_blank">Learn how to obtain one here.</a></li>
+    </ul>
+    """
+    st.markdown(html_code, unsafe_allow_html=True)
+
+    if st.button("Submit"):
+        if len(temp_key) < 20:
+            st.error("The API key seems too short. Please recheck.")
+        else:
+            if is_valid_openai_key(temp_key):
+                session_state.api_key = temp_key
+                st.experimental_rerun()
+            else:
+                st.error("The provided API key is invalid. Please recheck.")
+
+
+if session_state.api_key:
+    @st.cache_data
+    def get_response(text, api_key_valid):
+        
+        prompt = f"""
             You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
             make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
             your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
 
             text: ''''{text}''''
             """
-    response = openai.ChatCompletion.create(
-        model = "gpt-3.5-turbo",
-        messages=[
-            {
-                "role" : "system",
-                "content" : prompt,
-            },
-        ],
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {
+                    "role": "system",
+                    "content": prompt,
+                },
+            ],
 
-    )
-    return response ["choices"][0]["message"]["content"]
+        )
+        return response["choices"][0]["message"]["content"]
+
+else:
+    st.error("Please provide a valid API key.")
+
 
 def main():
-    st.set_page_config(
-        page_title = "Summarizer",
-        page_icon = "📒",
-         layout="wide",
-    )
 
-    st.title("Welcome to the AI summarizer website.")
-    st.subheader("This website uses :blue[OpenAI]'s GPT-3.5 turbo to summarize a given Document.")
     st.divider()
-    st.markdown(":red[**Notice**] : **Do not** enter sensitive data. Data entered will be sent to OpenAI servers to be further processed.")
-    st.divider()
-    st.markdown("**First step**: Please enter OpenAI key.")
-    st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-    api_key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    is_valid = check_openai_api_key(api_key)
-    if st.button("check",key="1") and is_valid == True:
+    st.markdown(
+        "**Second step**: Choose format and insert a file to summarize it.")
+    option = st.radio("Select Input Type",
+                      ("Text", "Image", "PDF", "Word", "PowerPoint"))
+
+    if option == "Text":
+
+        user_input = st.text_area(
+            "Enter Text", placeholder="Enter some paragraphs to sammarize it.")
+
+        if st.button("Submit", key=12) and user_input != "":
+
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
+
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
+
+            time.sleep(1)
+            my_bar.empty()
+
+            response = get_response(user_input)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
+        else:
+            st.error("Please enter some text.")
+
+    elif option == "Image":
+        uploaded_file = st.file_uploader("Choose a JPG file", type="jpg")
+
         st.divider()
-        st.markdown("**Second step**: Choose format and insert a file to summarize it.")
-        option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
-        if option == "Text":
 
-            user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
+        if st.button("Submit") and uploaded_file is not None:
+            text = str(extract_text_from_JPG(uploaded_file))
 
-            if st.button("Submit",key="2") and user_input !="":
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
-                
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                
-                time.sleep(1)
-                my_bar.empty()
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
 
-                response = get_response(user_input)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please enter some text.")
+            time.sleep(1)
+            my_bar.empty()
 
-        elif option == "Image":
-            uploaded_file = st.file_uploader("Choose a JPG file",type="jpg")
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
+        else:
+            st.error("Please upload a JPG file.")
 
-            st.divider()
+    elif option == "PDF":
+        uploaded_file = st.file_uploader("Choose a PDF file", type="PDF")
 
-            if st.button("Submit",key="3") and uploaded_file is not None:
-                text = str(extract_text_from_JPG(uploaded_file))
+        st.divider()
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
-                
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                
-                time.sleep(1)
-                my_bar.empty()
+        if st.button("Submit") and uploaded_file is not None:
+            text = extract_text_from_pdf(uploaded_file)
 
-                response = get_response(text=text)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please upload a JPG file.")
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
 
-        elif option == "PDF":
-            uploaded_file = st.file_uploader("Choose a PDF file",type="PDF")
-        
-            st.divider()
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
 
-            if st.button("Submit",key="4") and uploaded_file is not None:
-                text = extract_text_from_pdf(uploaded_file)
+            time.sleep(1)
+            my_bar.empty()
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
-                
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                
-                time.sleep(1)
-                my_bar.empty()
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
+        else:
+            st.error("Please upload a PDF file.")
 
-                response = get_response(text=text)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please upload a PDF file.")
+    elif option == "Word":
+        uploaded_file = st.file_uploader("Choose a Word file", type="docx")
 
-        elif option == "Word":
-            uploaded_file = st.file_uploader("Choose a Word file",type="docx")
+        if st.button("Submit") and uploaded_file is not None:
+            text = extract_text_from_docx(uploaded_file)
 
-            if st.button("Submit",key="5") and uploaded_file is not None:
-                text = extract_text_from_docx(uploaded_file)
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
-                
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                
-                time.sleep(1)
-                my_bar.empty()
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
 
-                response = get_response(text=text)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please upload a Word file.")
+            time.sleep(1)
+            my_bar.empty()
 
-        elif option == "PowerPoint":
-            uploaded_file = st.file_uploader("Choose a Powerpoint file",type="pptx")
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
+        else:
+            st.error("Please upload a Word file.")
 
-            st.divider()
+    elif option == "PowerPoint":
+        uploaded_file = st.file_uploader(
+            "Choose a Powerpoint file", type="pptx")
 
-            if st.button("Submit",key="6") and uploaded_file is not None:
-                text = extract_text_from_pptx(uploaded_file)
+        st.divider()
 
-                progress_text = "In progress. Please wait."
-                my_bar = st.progress(0, text=progress_text)
-                
-                for percent_complete in range(100):
-                    time.sleep(0.1)
-                    my_bar.progress(percent_complete + 1, text=progress_text)
-                
-                time.sleep(1)
-                my_bar.empty()
+        if st.button("Submit") and uploaded_file is not None:
+            text = extract_text_from_pptx(uploaded_file)
 
-                response = get_response(text=text)
-                st.success("done!")
-                st.subheader("Summary")
-                st.markdown(f"> {response}")
-            else:
-                st.error("Please upload a Powerpoint file.")
-    else:
-        st.error("Please provide a valid key.")
+            progress_text = "In progress. Please wait."
+            my_bar = st.progress(0, text=progress_text)
+
+            for percent_complete in range(100):
+                time.sleep(0.1)
+                my_bar.progress(percent_complete + 1, text=progress_text)
+
+            time.sleep(1)
+            my_bar.empty()
+
+            response = get_response(text=text)
+            st.success("done!")
+            st.subheader("Summary")
+            st.markdown(f"> {response}")
+        else:
+            st.error("Please upload a Powerpoint file.")
 
     st.divider()
 
@@ -244,7 +240,52 @@ def main():
     st.markdown(html, unsafe_allow_html=True)
 
     st.caption('Made by Meshal Alsultan')
-    st.caption('v1.0')     
+    st.caption('v1.0')
+
+
+def extract_text_from_pdf(pdf_file):
+
+    reader = PdfReader(pdf_file)
+
+    raw_text = ""
+    for page in reader.pages:
+        content = page.extract_text()
+        if content:
+            raw_text = raw_text + content
+
+    return raw_text
+
+
+def extract_text_from_pptx(pptx_file):
+
+    raw_text = ""
+    prs = Presentation(pptx_file)
+
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if hasattr(shape, "text"):
+                text = shape.text
+                raw_text = raw_text + text
+
+    return raw_text
+
+
+def extract_text_from_docx(docx_file):
+
+    doc = docx.Document(docx_file)
+    fullText = []
+    for para in doc.paragraphs:
+        fullText.append(para.text)
+    return '\n'.join(fullText)
+
+
+def extract_text_from_JPG(JPG_file):
+
+    image = Image.open(JPG_file)
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
+    raw_text = image_to_string(image, lang='eng')
+    return raw_text
+
 
 if __name__ == "__main__":
-    main() 
+    main()
