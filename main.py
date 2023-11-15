@@ -53,19 +53,15 @@ def extract_text_from_JPG(JPG_file):
     raw_text = image_to_string(image,lang='eng')
     return raw_text
 
-def is_api_key_valid(key):
-        try:
-            response = openai.Completion.create(
-                engine="davinci",
-                prompt="This is a test.",
-                max_tokens=5
-            )
-        except:
-            return False
-        else:
-            openai.api_key = key
-            return True
-
+def check_openai_api_key(api_key):
+    openai.api_key = api_key
+    try:
+        openai.Model.list()
+    except openai.error.AuthenticationError as e:
+        return False
+    else:
+        return True
+    
 @st.cache_data
 def get_response(text):
 
@@ -102,8 +98,9 @@ def main():
     st.divider()
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
-    key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    if st.button("check",key="1") and is_api_key_valid(key) == True:
+    api_key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
+    is_valid = check_openai_api_key(api_key)
+    if st.button("check",key="1") and is_valid == True:
         st.divider()
         st.markdown("**Second step**: Choose format and insert a file to summarize it.")
         option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
