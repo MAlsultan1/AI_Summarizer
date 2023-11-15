@@ -130,7 +130,7 @@ def main():
         st.divider()
 
         if st.button("Submit") and uploaded_file is not None:
-            text = str(extract_text_from_JPG(uploaded_file))
+            text = extract_text_from_JPG(uploaded_file)
 
             progress_text = "In progress. Please wait."
             my_bar = st.progress(0, text=progress_text)
@@ -282,7 +282,7 @@ def extract_text_from_docx(docx_file):
 def extract_text_from_JPG(JPG_file):
 
     image = Image.open(JPG_file)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR'
     raw_text = image_to_string(image, lang='eng')
     return raw_text
 
