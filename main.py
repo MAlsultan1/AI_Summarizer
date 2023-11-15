@@ -103,7 +103,7 @@ def main():
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
     key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    if st.button("check") and is_api_key_valid(key) == True:
+    if st.button("check",key="1") and is_api_key_valid(key) == True:
         st.divider()
         st.markdown("**Second step**: Choose format and insert a file to summarize it.")
         option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
@@ -111,7 +111,7 @@ def main():
 
             user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
 
-            if st.button("Submit") and user_input !="":
+            if st.button("Submit",key="2") and user_input !="":
 
                 progress_text = "In progress. Please wait."
                 my_bar = st.progress(0, text=progress_text)
@@ -135,7 +135,7 @@ def main():
 
             st.divider()
 
-            if st.button("Submit") and uploaded_file is not None:
+            if st.button("Submit",key="3") and uploaded_file is not None:
                 text = str(extract_text_from_JPG(uploaded_file))
 
                 progress_text = "In progress. Please wait."
@@ -160,7 +160,7 @@ def main():
         
             st.divider()
 
-            if st.button("Submit") and uploaded_file is not None:
+            if st.button("Submit",key="4") and uploaded_file is not None:
                 text = extract_text_from_pdf(uploaded_file)
 
                 progress_text = "In progress. Please wait."
@@ -183,7 +183,7 @@ def main():
         elif option == "Word":
             uploaded_file = st.file_uploader("Choose a Word file",type="docx")
 
-            if st.button("Submit") and uploaded_file is not None:
+            if st.button("Submit",key="5") and uploaded_file is not None:
                 text = extract_text_from_docx(uploaded_file)
 
                 progress_text = "In progress. Please wait."
@@ -208,7 +208,7 @@ def main():
 
             st.divider()
 
-            if st.button("Submit") and uploaded_file is not None:
+            if st.button("Submit",key="6") and uploaded_file is not None:
                 text = extract_text_from_pptx(uploaded_file)
 
                 progress_text = "In progress. Please wait."
