@@ -63,6 +63,7 @@ def is_api_key_valid(key):
         except:
             return False
         else:
+            openai.api_key = key
             return True
 
 @st.cache_data
@@ -102,7 +103,6 @@ def main():
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
     key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    openai.api_key = key
     if st.button("check") and is_api_key_valid(key) == True:
         st.divider()
         st.markdown("**Second step**: Choose format and insert a file to summarize it.")
