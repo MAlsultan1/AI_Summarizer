@@ -102,12 +102,11 @@ def main():
     st.markdown("**First step**: Please enter OpenAI key.")
     st.markdown("**Hint**, the following link should help you in obtaining your key: https://www.maisieai.com/help/how-to-get-an-openai-api-key-for-chatgpt")
     key = st.text_input('OpenAI key', placeholder = 'Your key should be inserted here.',type="password")
-    api_key_valid = is_api_key_valid(key) 
-    if st.button("submit",1) and api_key_valid == True :
+    openai.api_key = key
+    if st.button("submit",1) and is_api_key_valid(key) :
         st.divider()
         st.markdown("**Second step**: Choose format and insert a file to summarize it.")
         option = st.radio("Select Input Type",("Text","Image","PDF", "Word","PowerPoint"))
-        openai.api_key = key
         if option == "Text":
 
             user_input = st.text_area("Enter Text", placeholder = "Enter some paragraphs to sammarize it.")
