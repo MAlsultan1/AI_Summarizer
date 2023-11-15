@@ -67,8 +67,8 @@ if not session_state.api_key:
 
 if session_state.api_key:
     @st.cache_data
-    def get_response(text, api_key_valid):
-        
+    def get_response(text):
+
         prompt = f"""
             You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
             make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
