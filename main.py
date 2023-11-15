@@ -282,7 +282,7 @@ def extract_text_from_docx(docx_file):
 def extract_text_from_JPG(JPG_file):
 
     image = Image.open(JPG_file)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Users\mishal\Documents\MyProjects\AI-Summarizer\AI_Summarizer'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files (x86)\Tesseract-OCR\tesseract'
     raw_text = image_to_string(image, lang='eng')
     return raw_text
 
