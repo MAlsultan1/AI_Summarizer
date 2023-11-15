@@ -53,7 +53,7 @@ def extract_text_from_JPG(JPG_file):
     raw_text = image_to_string(image,lang='eng')
     return raw_text
 
-def is_api_key_valid():
+def is_api_key_valid(key):
         try:
             response = openai.Completion.create(
                 engine="davinci",
