@@ -115,7 +115,7 @@ def extract_text_from_JPG(file):
         return None
 
     image = Image.open(file)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Users\mishal\miniconda3\envs\py311\Lib\site-packages\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR'
     raw_text = pytesseract.image_to_string(image)
     return raw_text  
 
