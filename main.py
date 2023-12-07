@@ -1,15 +1,15 @@
 import os
 import openai
 import streamlit as st
-
 from PyPDF2 import PdfReader
 from pptx import Presentation
 import docx
 import pytesseract
 from PIL import Image
-from pytesseract import image_to_string
-import glob
 import time
+import PyPDF2
+import io
+
 
 st.set_page_config(
     page_title="Summarizer",
@@ -17,31 +17,30 @@ st.set_page_config(
     layout="wide",
 )
 
-
 session_state = st.session_state
-
 
 if "api_key" not in session_state:
     session_state.api_key = None
 
-
-# ? Check if the provided OpenAI API key is valid
+# Check if the provided OpenAI API key is valid
 def is_valid_openai_key(api_key):
     """Check if the provided OpenAI API key is valid."""
     openai.api_key = api_key
     try:
-        # ! Make a test call. Here we'll list available engines, which is a lightweight call.
-        response = openai.Engine.list()
-        if response and 'data' in response:
+        # Make a test call.
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an expert in summarizing Documents."},
+            ],
+        )
+        if response and 'choices' in response:
             return True
-    except openai.error.OpenAIError as e:
-        # ! Handle specific authentication error
-        if "Authentication" in str(e):
-            return False
+    except openai.error.AuthenticationError:
+        return False
     return False
 
-
-# ? If API key has not been set, show the input
+# If API key has not been set in the code, show the input
 if not session_state.api_key:
     st.title("📒Welcome to AI summarizer website.")
     st.write("Please enter your OpenAI API key to begin:")
@@ -63,52 +62,89 @@ if not session_state.api_key:
                 st.experimental_rerun()
             else:
                 st.error("The provided API key is invalid. Please recheck.")
-
-
+openai.api_key = session_state.api_key
 if session_state.api_key:
-    @st.cache_data
-    def get_response(text):
 
+    def get_response(text): 
+         # Check if the input exceeds the maximum allowed context length
+        max_context_length = 4000
+        if len(text.split()) > max_context_length:
+            st.error(f"Input exceeds the maximum allowed length of {max_context_length} words. Please provide a shorter input.")
+            return None  
         prompt = f"""
             You are an expert in summarizing Documents. You will be given a Document delimited by four backquotes, 
-            make sure to capture the main points, key arguments, and many supporting evidence presented in the article.
-            your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
+            make sure to capture the main points, key arguments, and any supporting evidence presented in the article.
+            Your summary should be informative and well-structured, ideally consisting of 3-5 sentences.
 
             text: ''''{text}''''
             """
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {
-                    "role": "system",
-                    "content": prompt,
-                },
-            ],
-
-        )
-        return response["choices"][0]["message"]["content"]
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": prompt},
+                ],
+            )
+            return response
+        except Exception as e:
+            st.error(f"An error occurred: {str(e)}")
+            return None       
 
 else:
     st.error("Please provide a valid API key.")
+
+
+def extract_text_from_docx(file):
+    # Check if the file is a Word document
+    if not file.name.lower().endswith(".docx"):
+        st.error("Invalid file type. Please upload a Word document.")
+        return None
+
+    doc = docx.Document(file)
+    full_text = []
+    for para in doc.paragraphs:
+        full_text.append(para.text)
+    return '\n'.join(full_text)
+
+
+
+def extract_text_from_JPG(file):
+    # Check if the file is an image
+    if not file.type.startswith("image"):
+        st.error("Invalid file type. Please upload an image.")
+        return None
+
+    image = Image.open(file)
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    raw_text = pytesseract.image_to_string(image)
+    return raw_text  
+
 
 
 def main():
 
     st.divider()
     st.markdown(
-        "**Second step**: Choose format and insert a file to summarize it.")
+        "*Second step*: Choose format and insert a file to summarize it.")
     option = st.radio("Select Input Type",
                       ("Text", "Image", "PDF", "Word", "PowerPoint"))
 
     if option == "Text":
+        if not session_state.api_key:
+            st.error("Please enter an API key first.")
+            return
 
         user_input = st.text_area(
-            "Enter Text", placeholder="Enter some paragraphs to sammarize it.")
-
+            "Enter Text", placeholder="Enter some paragraphs to summarize it."
+        )
         if st.button("Submit", key=12) and user_input != "":
-
-            progress_text = "In progress. Please wait."
-            my_bar = st.progress(0, text=progress_text)
+            max_context_length = 4000
+            if len(user_input.split()) > max_context_length:
+                st.error(f"Input exceeds the maximum allowed length of {max_context_length} words. Please provide a shorter input.")
+                return
+            else:
+                 progress_text = "In progress. Please wait."
+                 my_bar = st.progress(0, text=progress_text)
 
             for percent_complete in range(100):
                 time.sleep(0.1)
@@ -118,70 +154,37 @@ def main():
             my_bar.empty()
 
             response = get_response(user_input)
+            generated_response = response['choices'][0]['message']['content']
+            generated_text = generated_response.strip()
             st.success("done!")
             st.subheader("Summary")
-            st.markdown(f"> {response}")
+            st.markdown(f"> {generated_text}")
+
         else:
             st.error("Please enter some text.")
+        
+    elif option in ["Image", "PDF", "Word", "PowerPoint"]:
+        if not session_state.api_key:
+            st.error("Please enter an API key first.")
+            return
 
-    elif option == "Image":
-        uploaded_file = st.file_uploader("Choose a JPG file", type="jpg")
-
-        st.divider()
-
-        if st.button("Submit") and uploaded_file is not None:
-            text = extract_text_from_JPG(uploaded_file)
-
-            progress_text = "In progress. Please wait."
-            my_bar = st.progress(0, text=progress_text)
-
-            for percent_complete in range(100):
-                time.sleep(0.1)
-                my_bar.progress(percent_complete + 1, text=progress_text)
-
-            time.sleep(1)
-            my_bar.empty()
-
-            response = get_response(text=text)
-            st.success("done!")
-            st.subheader("Summary")
-            st.markdown(f"> {response}")
-        else:
-            st.error("Please upload a JPG file.")
-
-    elif option == "PDF":
-        uploaded_file = st.file_uploader("Choose a PDF file", type="PDF")
+        uploaded_file = st.file_uploader(f"Choose a {option} file", type=["jpg", "pdf", "docx", "pptx"])
 
         st.divider()
 
         if st.button("Submit") and uploaded_file is not None:
-            text = extract_text_from_pdf(uploaded_file)
+            text = extract_content_from_file(option, uploaded_file)
 
-            progress_text = "In progress. Please wait."
-            my_bar = st.progress(0, text=progress_text)
-
-            for percent_complete in range(100):
-                time.sleep(0.1)
-                my_bar.progress(percent_complete + 1, text=progress_text)
-
-            time.sleep(1)
-            my_bar.empty()
-
-            response = get_response(text=text)
-            st.success("done!")
-            st.subheader("Summary")
-            st.markdown(f"> {response}")
-        else:
-            st.error("Please upload a PDF file.")
-
-    elif option == "Word":
-        uploaded_file = st.file_uploader("Choose a Word file", type="docx")
-
-        if st.button("Submit") and uploaded_file is not None:
-            text = extract_text_from_docx(uploaded_file)
-
-            progress_text = "In progress. Please wait."
-            my_bar = st.progress(0, text=progress_text)
+            if text is None:
+                return
+            
+            max_context_length = 4000
+            if len(text.split()) > max_context_length:
+                st.error(f"Input exceeds the maximum allowed length of {max_context_length} words. Please provide a shorter input.")
+                return
+            else:
+                progress_text = "In progress. Please wait."
+                my_bar = st.progress(0, text=progress_text)
 
             for percent_complete in range(100):
                 time.sleep(0.1)
@@ -191,75 +194,71 @@ def main():
             my_bar.empty()
 
             response = get_response(text=text)
+            summary = response['choices'][0]['message']['content']
             st.success("done!")
             st.subheader("Summary")
-            st.markdown(f"> {response}")
-        else:
-            st.error("Please upload a Word file.")
+            st.markdown(f"> {summary}")
 
-    elif option == "PowerPoint":
-        uploaded_file = st.file_uploader(
-            "Choose a Powerpoint file", type="pptx")
-
-        st.divider()
-
-        if st.button("Submit") and uploaded_file is not None:
-            text = extract_text_from_pptx(uploaded_file)
-
-            progress_text = "In progress. Please wait."
-            my_bar = st.progress(0, text=progress_text)
-
-            for percent_complete in range(100):
-                time.sleep(0.1)
-                my_bar.progress(percent_complete + 1, text=progress_text)
-
-            time.sleep(1)
-            my_bar.empty()
-
-            response = get_response(text=text)
-            st.success("done!")
-            st.subheader("Summary")
-            st.markdown(f"> {response}")
-        else:
-            st.error("Please upload a Powerpoint file.")
-
+       
+    
     st.divider()
 
-    github_link = "https://github.com/MAlsultan1"
-    twitter_link = "https://twitter.com/Mish3l809"
-    github_logo = "https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Github-16.png"
-    twitter_logo = "https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-16.png"
 
-    html = f"""
-    <ul style="list-style-type: none; padding-left: 0;">
-        <li><a href="{github_link}" target="_blank"><img src="{github_logo}" width="20" height="20"/> GitHub</a></li>
-        <li><a href="{twitter_link}" target="_blank"><img src="{twitter_logo}" width="20" height="20"/> X(Twitter)</a></li>
-    </ul>
-    """
-    st.subheader("follow me on:")
-    st.markdown(html, unsafe_allow_html=True)
+    st.subheader("IMPORTANT NOTE:")
+    st.caption(""" This is a demo version, and more features are on the horizon! In the upcoming semester we will do the following:
 
-    st.caption('Made by Meshal Alsultan')
+- *Enhanced Functionality:* Additional features to make your summarization experience even better.
+- *User-Friendly Design:* A sleek and intuitive design for a more pleasant interaction.
+- *Expanded Format Support:* More file types and document formats for greater flexibility.
+- *Optimized Performance:* Faster processing and improved efficiency.
+- *Community Feedback Integration:* Your feedback will shape the next versions!
+
+Stay tuned for the next release and the exciting improvements. Thank you for using our AI Summarizer! """)
     st.caption('v1.0')
 
+def extract_content_from_file(option, file):
+    if option == "Image":
+        return extract_text_from_JPG(file)
+    elif option == "PDF":
+        return extract_text_from_pdf(file)
+    elif option == "Word":
+        return extract_text_from_docx(file)
+    elif option == "PowerPoint":
+        return extract_text_from_pptx(file)
+    else:
+        
+        return None
+    
 
-def extract_text_from_pdf(pdf_file):
+def extract_text_from_pdf(file):
+    # Check if the file is a PDF
+    if not file.name.lower().endswith(".pdf"):
+        st.error("Invalid file type. Please upload a PDF file.")
+        return None
 
-    reader = PdfReader(pdf_file)
+    
+    file_content = io.BytesIO(file.read())
+
+    try:
+        pdf_reader = PyPDF2.PdfReader(file_content)
+        text = ""
+        for page_number in range(len(pdf_reader.pages)):
+            text += pdf_reader.pages[page_number].extract_text()
+        return text
+    except PyPDF2.utils.PdfReadError:
+        st.error("Error reading PDF file.")
+        return None
+
+
+
+def extract_text_from_pptx(file):
+    # Check if the file is a PowerPoint 
+    if not file.name.lower().endswith(".pptx"):
+        st.error("Invalid file type. Please upload a PowerPoint.")
+        return None
 
     raw_text = ""
-    for page in reader.pages:
-        content = page.extract_text()
-        if content:
-            raw_text = raw_text + content
-
-    return raw_text
-
-
-def extract_text_from_pptx(pptx_file):
-
-    raw_text = ""
-    prs = Presentation(pptx_file)
+    prs = Presentation(file)
 
     for slide in prs.slides:
         for shape in slide.shapes:
@@ -267,23 +266,6 @@ def extract_text_from_pptx(pptx_file):
                 text = shape.text
                 raw_text = raw_text + text
 
-    return raw_text
-
-
-def extract_text_from_docx(docx_file):
-
-    doc = docx.Document(docx_file)
-    fullText = []
-    for para in doc.paragraphs:
-        fullText.append(para.text)
-    return '\n'.join(fullText)
-
-
-def extract_text_from_JPG(JPG_file):
-
-    image = Image.open(JPG_file)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR'
-    raw_text = pytesseract.image_to_string(image)
     return raw_text
 
 
