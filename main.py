@@ -215,22 +215,6 @@ def main():
 
     st.caption('Made by Meshal Alsultan')
     st.caption('v1.0')
-
-       
-    
-    st.divider()
-
-
-    st.subheader("IMPORTANT NOTE:")
-    st.caption(""" This is a demo version, and more features are on the horizon! In the upcoming semester we will do the following:
-
-- *Enhanced Functionality:* Additional features to make your summarization experience even better.
-- *User-Friendly Design:* A sleek and intuitive design for a more pleasant interaction.
-- *Expanded Format Support:* More file types and document formats for greater flexibility.
-- *Optimized Performance:* Faster processing and improved efficiency.
-- *Community Feedback Integration:* Your feedback will shape the next versions!
-
-Stay tuned for the next release and the exciting improvements. Thank you for using our AI Summarizer! """)
     st.caption('v1.0')
 
 def extract_content_from_file(option, file):
