@@ -215,7 +215,6 @@ def main():
 
     st.caption('Made by Meshal Alsultan')
     st.caption('v1.0')
-    st.caption('v1.0')
 
 def extract_content_from_file(option, file):
     if option == "Image":
